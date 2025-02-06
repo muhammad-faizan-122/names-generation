@@ -1,109 +1,131 @@
 import torch
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
 import os
 import requests
 import random
+from typing import List, Tuple
 
 random.seed(42)
 
 
-def download_dataset(
-    url: str = "https://raw.githubusercontent.com/karpathy/makemore/master/names.txt",
-    path: str = "dataset/names.txt",
-    max_retries: int = 3,
-) -> None:
-    """Download dataset if not present locally."""
+# 1. Dataset Management
+def download_dataset(url: str, path: str, max_retries: int = 3) -> None:
+    """Downloads a dataset if it's not already present locally."""
     if os.path.exists(path):
         print(f"File already exists: {path}")
         return
 
-    print(f"Dataset is downloading...")
+    print(f"Downloading dataset from {url}...")
     for attempt in range(max_retries):
         try:
             response = requests.get(url, stream=True, timeout=10)
-            if response.status_code == 200:
-                os.makedirs(os.path.dirname(path), exist_ok=True)
-                with open(path, "wb") as file:
-                    for chunk in response.iter_content(chunk_size=1024):
-                        file.write(chunk)
-                print(f"Download complete: {path}")
-                return
-            else:
-                print(f"Failed to download. HTTP Status: {response.status_code}")
+            response.raise_for_status()  # Raises HTTPError for bad responses
+
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as file:
+                for chunk in response.iter_content(chunk_size=1024):
+                    file.write(chunk)
+
+            print(f"Download complete: {path}")
+            return
         except requests.exceptions.RequestException as e:
             print(f"Attempt {attempt+1}/{max_retries} failed: {e}")
 
     print("Download failed after multiple attempts.")
 
 
-def read_names(fpath: str) -> list[str]:
-    """Read names from the dataset file."""
-    with open(fpath, "r") as file:
-        names = [line.strip() for line in file]
-    print(f"Total names: {len(names)}")
-    return names
+def read_names(file_path: str) -> List[str]:
+    """Reads names from the dataset file."""
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            names = [line.strip() for line in file]
+        print(f"Total names loaded: {len(names)}")
+        return names
+    except FileNotFoundError:
+        print(f"Error: File not found at {file_path}")
+        return []
 
 
-def encode_chars(words):
-    chars = sorted(list(set("".join(words))))
+# 2. Character Encoding
+def encode_chars(words: List[str]) -> dict:
+    """Creates a character-to-index mapping."""
+    chars = sorted(set("".join(words)))
     stoi = {s: i + 1 for i, s in enumerate(chars)}
-    stoi["."] = 0
+    stoi["."] = 0  # End-of-word token
     return stoi
 
 
-def decode_chars(stoi):
-    itos = {i: s for s, i in stoi.items()}
-    return itos
+def decode_chars(stoi: dict) -> dict:
+    """Creates an index-to-character mapping."""
+    return {i: s for s, i in stoi.items()}
 
 
-def build_dataset(words, stoi, block_size):
+# 3. Dataset Preparation
+def build_dataset(
+    words: List[str], stoi: dict, block_size: int
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Encodes words into tensor format for training."""
     X, Y = [], []
 
-    for w in words:
-        context = [0] * block_size
-        for ch in w + ".":
+    for word in words:
+        context = [0] * block_size  # Start with padding
+        for ch in word + ".":
             ix = stoi[ch]
             X.append(context)
             Y.append(ix)
-            context = context[1:] + [ix]  # crop and append
+            context = context[1:] + [ix]  # Shift context
 
-    X = torch.tensor(X)
-    Y = torch.tensor(Y)
-    print(X.shape, Y.shape)
-    return X, Y
+    X_tensor, Y_tensor = torch.tensor(X, dtype=torch.long), torch.tensor(
+        Y, dtype=torch.long
+    )
+    print(f"Dataset shape: {X_tensor.shape}, {Y_tensor.shape}")
+    return X_tensor, Y_tensor
 
 
-def get_encoding_splitted_dataset(
-    words,
-    stoi,
-    block_size,
-    train_ratio,
-    test_ratio,
-):
+def split_dataset(
+    words: List[str], stoi: dict, block_size: int, train_ratio: float, test_ratio: float
+) -> Tuple[
+    torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+]:
+    """Splits data into training, validation, and test sets."""
     random.shuffle(words)
 
-    n1 = int(train_ratio * len(words))
-    n2 = int((train_ratio + test_ratio) * len(words))
+    n_train = int(train_ratio * len(words))
+    n_test = int((train_ratio + test_ratio) * len(words))
 
-    Xtr, Ytr = build_dataset(words[:n1], stoi, block_size=block_size)  # 80%
-    Xdev, Ydev = build_dataset(words[n1:n2], stoi, block_size=block_size)  # 10%
-    Xte, Yte = build_dataset(words[n2:], stoi, block_size=block_size)  # 10
+    X_train, Y_train = build_dataset(words[:n_train], stoi, block_size)
+    X_dev, Y_dev = build_dataset(words[n_train:n_test], stoi, block_size)
+    X_test, Y_test = build_dataset(words[n_test:], stoi, block_size)
 
-    return Xtr, Ytr, Xdev, Ydev, Xte, Yte
+    return X_train, Y_train, X_dev, Y_dev, X_test, Y_test
 
 
-def get_dataset(path, block_size=3, train_ratio=0.8, test_ratio=0.10):
-    """return train/test/validation tensor dataset"""
-    # download dataset if not exist locally
-    download_dataset()
-    # read names text files
+def get_dataset(
+    path: str = "dataset/names.txt",
+    block_size: int = 3,
+    train_ratio: float = 0.8,
+    test_ratio: float = 0.1,
+    dataset_url: str = "https://raw.githubusercontent.com/karpathy/makemore/master/names.txt",
+) -> Tuple[
+    torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
+]:
+    """
+    Downloads, loads, encodes, and splits the dataset into training, validation, and test sets.
+
+    Returns:
+        X_train, Y_train: Training set
+        X_dev, Y_dev: Validation set
+        X_test, Y_test: Test set
+    """
+    # Download dataset if not present
+    download_dataset(dataset_url, path)
+
+    # Load names from file
     names = read_names(path)
-    # character encoding (char 2 integer)
-    stoi = encode_chars(names)
-    # get the tensor train/test/validation splitted dataset
-    Xtr, Ytr, Xdev, Ydev, Xte, Yte = get_encoding_splitted_dataset(
-        names, stoi, block_size, train_ratio, test_ratio
-    )
+    if not names:
+        raise RuntimeError("Failed to load dataset. Please check the file path.")
 
-    return Xtr, Ytr, Xdev, Ydev, Xte, Yte
+    # Character encoding
+    stoi = encode_chars(names)
+
+    # Split dataset
+    return split_dataset(names, stoi, block_size, train_ratio, test_ratio)
