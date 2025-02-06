@@ -50,6 +50,7 @@ class Trainer:
 
         print("Training complete!")
         self.plot_loss()
+        return self.model.parameters
 
     def plot_loss(self):
         """Plots training loss curve"""

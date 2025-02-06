@@ -35,6 +35,6 @@ mlp_model = MLPModel(vocab_size, BLOCK_SIZE)
 
 # Train Model
 trainer = Trainer(mlp_model, X_train, Y_train)
-trainer.train()
+trained_params = trainer.train()
 
 print("Model training complete!")
