@@ -1,7 +1,9 @@
 from data_loader import DatasetLoader
 from preprocess import Preprocessor, DatasetProcessor
+from mlp_model import MLPModel
+from trainer import Trainer
 
-# Dataset configuration
+# Dataset Configuration
 DATASET_URL = "https://raw.githubusercontent.com/karpathy/makemore/master/names.txt"
 LOCAL_PATH = "dataset/names.txt"
 BLOCK_SIZE = 3
@@ -26,3 +28,13 @@ X_train, Y_train, X_dev, Y_dev, X_test, Y_test = dataset_processor.split_dataset
 )
 
 print("Dataset processing complete!")
+
+# Initialize Model
+vocab_size = len(preprocessor.stoi)
+mlp_model = MLPModel(vocab_size, BLOCK_SIZE)
+
+# Train Model
+trainer = Trainer(mlp_model, X_train, Y_train)
+trainer.train()
+
+print("Model training complete!")
