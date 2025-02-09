@@ -1,4 +1,4 @@
-from src.data.data_loader import DatasetLoader
+from src.data.loader import DatasetLoader
 from src.preprocessing.preprocess import Preprocessor, DatasetProcessor
 from src.training.model import MLPModel
 from src.training.trainer import Trainer

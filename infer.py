@@ -1,5 +1,5 @@
 from src.preprocessing.preprocess import Preprocessor, DatasetProcessor
-from src.data.data_loader import DatasetLoader
+from src.data.loader import DatasetLoader
 from src.training.model import MLPModel
 from src.inference.inference import evaluate_model, generate_names
 from src.utils import load_config
