@@ -11,16 +11,39 @@ Install requirements
 ```
 pip install -r requirements.txt
 ```
-# Training 
+## Training 
 Training script download the dataset if not exist in your require local directory.
 ```
 python train.py
 ```
 
-# Inference
+### Inference
 
 Before run the infer, run the training script to get the trained model. To run inference script
 ```
 python infer.py
 ```
 
+## Generated names:
+```
+Generating Sample Words:
+montaymyah.
+see.
+madhayla.
+rethruthadrie.
+caileed.
+elin.
+shi.
+jenleigh.
+van.
+nar.
+kayzion.
+kalin.
+shubergihamie.
+trick.
+welle.
+jetton.
+kubakarder.
+yarue.
+eha.
+kayshia.```
