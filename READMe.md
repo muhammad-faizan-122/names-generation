@@ -1,4 +1,4 @@
-# Name generation Model
+# Character Level Name generation Model
 Build character level names generation using Multi-Layer Perceptrons.
 
 ## Setup
@@ -24,7 +24,7 @@ Before run the infer, run the training script to get the trained model. To run i
 python infer.py
 ```
 
-## Generated names:
+## Generated names
 ```
 Generating Sample Words:
 montaymyah.
