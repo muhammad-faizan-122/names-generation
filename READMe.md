@@ -1,5 +1,7 @@
 # Character Level Name generation Model
-Build character level names generation using Multi-Layer Perceptrons.
+Build character level names generation using Multi-Layer Perceptrons in pytorch. 
+
+
 
 ## Setup
 create conda or virtual environment, For conda user
@@ -24,9 +26,8 @@ Before run the infer, run the training script to get the trained model. To run i
 python infer.py
 ```
 
-## Generated names
+**Resultant Generated names**
 ```
-Generating Sample Words:
 montaymyah.
 see.
 madhayla.
@@ -46,4 +47,5 @@ jetton.
 kubakarder.
 yarue.
 eha.
-kayshia.```
+kayshia.
+```
