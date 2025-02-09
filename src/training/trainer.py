@@ -1,8 +1,7 @@
 import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-from src.training.model import MLPModel
-from src.inference.inference import compute_loss
+from src.inference.utils import compute_loss
 
 
 class Trainer:

@@ -1,7 +1,7 @@
 from src.preprocessing.preprocess import Preprocessor, DatasetProcessor
 from src.data.loader import DatasetLoader
 from src.training.model import MLPModel
-from src.inference.inference import evaluate_model, generate_names
+from src.inference.utils import generate_names
 from src.utils import load_config
 
 configs = load_config()
