@@ -10,6 +10,7 @@ class DatasetLoader:
         self.url = url
         self.local_path = local_path
         self.max_retries = max_retries
+        self.download_dataset()
 
     def download_dataset(self) -> None:
         """Downloads dataset if not available locally."""

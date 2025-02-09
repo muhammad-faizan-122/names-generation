@@ -20,7 +20,7 @@ python train.py
 # Inference
 
 Before run the infer, run the training script to get the trained model. To run inference script
-``
+```
 python infer.py
 ```
 

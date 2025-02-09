@@ -2,16 +2,15 @@ from src.data.data_loader import DatasetLoader
 from src.preprocessing.preprocess import Preprocessor, DatasetProcessor
 from src.training.model import MLPModel
 from src.training.trainer import Trainer
+from src.utils import load_config
 
-# Dataset Configuration
-DATASET_URL = "https://raw.githubusercontent.com/karpathy/makemore/master/names.txt"
-LOCAL_PATH = "dataset/names.txt"
-BLOCK_SIZE = 3
-TRAIN_RATIO = 0.8
-TEST_RATIO = 0.1
+# Load Configurations
+configs = load_config()
 
 # Load dataset
-dataset_loader = DatasetLoader(DATASET_URL, LOCAL_PATH)
+dataset_loader = DatasetLoader(
+    configs["dataset"]["url"], configs["dataset"]["local_path"]
+)
 dataset_loader.download_dataset()
 words = dataset_loader.read_dataset()
 
@@ -20,21 +19,34 @@ if not words:
 
 # Preprocess dataset
 preprocessor = Preprocessor(words)
-dataset_processor = DatasetProcessor(words, preprocessor, BLOCK_SIZE)
+dataset_processor = DatasetProcessor(
+    words, preprocessor, configs["training"]["block_size"]
+)
 
 # Split dataset
 X_train, Y_train, X_dev, Y_dev, X_test, Y_test = dataset_processor.split_dataset(
-    TRAIN_RATIO, TEST_RATIO
+    configs["training"]["train_ratio"], configs["training"]["test_ratio"]
 )
 
 print("Dataset processing complete!")
 
 # Initialize Model
 vocab_size = len(preprocessor.stoi)
-mlp_model = MLPModel(vocab_size, BLOCK_SIZE)
+model = MLPModel(vocab_size, configs["training"]["block_size"])
 
 # Train Model
-trainer = Trainer(mlp_model, X_train, Y_train)
+trainer = Trainer(
+    model,
+    X_train,
+    Y_train,
+    epochs=configs["training"]["epochs"],
+    batch_size=configs["training"]["batch_size"],
+    model_path=configs["model"]["path"],
+)
+print("Training Model...")
 trained_params = trainer.train()
-
 print("Model training complete!")
+
+# Evaluate Model
+print("\n\nEvaluating model... ")
+trainer.evaluate_model(X_train, Y_train, X_dev, Y_dev, X_test, Y_test)

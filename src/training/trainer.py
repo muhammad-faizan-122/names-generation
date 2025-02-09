@@ -1,6 +1,8 @@
 import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+from src.training.model import MLPModel
+from src.inference.inference import compute_loss
 
 
 class Trainer:
@@ -11,7 +13,7 @@ class Trainer:
         model,
         X_train,
         Y_train,
-        max_steps=200000,
+        epochs=200000,
         batch_size=32,
         seed=2147483647,
         model_path="trained_model/model.pth",
@@ -19,7 +21,7 @@ class Trainer:
         self.model = model
         self.X_train = X_train
         self.Y_train = Y_train
-        self.max_steps = max_steps
+        self.epochs = epochs
         self.batch_size = batch_size
         self.losses = []
         # For reproducibility
@@ -30,7 +32,7 @@ class Trainer:
         """Trains the model"""
         print("Starting training...")
 
-        for i in range(self.max_steps):
+        for i in range(self.epochs):
             # Minibatch construction
             ix = torch.randint(
                 0, self.X_train.shape[0], (self.batch_size,), generator=self.generator
@@ -53,7 +55,7 @@ class Trainer:
 
             # Track loss
             if i % 10000 == 0:
-                print(f"{i:7d}/{self.max_steps:7d}: {loss.item():.4f}")
+                print(f"{i:7d}/{self.epochs:7d}: {loss.item():.4f}")
 
             self.losses.append(loss.log10().item())
 
@@ -78,6 +80,17 @@ class Trainer:
             self.model_path,
         )
         print(f"Model saved to {self.model_path}")
+
+    def evaluate_model(self, X_train, Y_train, X_dev, Y_dev, X_test, Y_test) -> None:
+        """Evaluate model on training, validation, and test sets."""
+        print("Evaluating Model...")
+        for split, (X, Y) in {
+            "train": (X_train, Y_train),
+            "val": (X_dev, Y_dev),
+            "test": (X_test, Y_test),
+        }.items():
+            loss = compute_loss(self.model, X, Y)
+            print(f"{split.capitalize()} Loss: {loss:.4f}")
 
     def plot_loss(self):
         """Plots training loss curve"""

@@ -8,6 +8,7 @@ class Preprocessor:
 
     def __init__(self, words: List[str]):
         self.stoi = self._create_encoding(words)
+        self.itos = self._create_decoding()
 
     def _create_encoding(self, words: List[str]) -> Dict[str, int]:
         """Creates a character-to-index mapping."""
@@ -15,6 +16,11 @@ class Preprocessor:
         stoi = {s: i + 1 for i, s in enumerate(chars)}
         stoi["."] = 0  # End-of-word token
         return stoi
+
+    def _create_decoding(self) -> Dict[int, str]:
+        """Creates a index-to-character mapping."""
+        itos = {i: s for s, i in self.stoi.items()}
+        return itos
 
     def encode(self, word: str) -> List[int]:
         """Encodes a word into a list of integers."""

@@ -1,0 +1,19 @@
+dataset:
+  url: "https://raw.githubusercontent.com/karpathy/makemore/master/names.txt"
+  local_path: "dataset/names.txt"
+
+training:
+  block_size: 3
+  train_ratio: 0.8
+  test_ratio: 0.1
+  vocab_size: 27
+  n_embd: 10
+  n_hidden: 200
+  epochs: 200000
+  batch_size: 32
+
+model:
+  path: "models/model.pth"
+
+sampling:
+  num_samples: 20
