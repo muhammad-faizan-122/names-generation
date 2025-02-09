@@ -7,8 +7,8 @@ class MLPModel:
 
     def __init__(
         self,
-        vocab_size: int,
-        block_size: int,
+        vocab_size: int = 27,
+        block_size: int = 3,
         n_embd: int = 10,
         n_hidden: int = 200,
         seed: int = 2147483647,
@@ -69,3 +69,23 @@ class MLPModel:
         # Output layer
         logits = h @ self.W2 + self.b2
         return logits
+
+    def load_parameters(self, path: str):
+        """Loads trained parameters from file"""
+        checkpoint = torch.load(path, weights_only=True)
+
+        self.C = checkpoint["C"]
+        self.W1 = checkpoint["W1"]
+        self.W2 = checkpoint["W2"]
+        self.b2 = checkpoint["b2"]
+        self.bngain = checkpoint["bngain"]
+        self.bnbias = checkpoint["bnbias"]
+
+        self.bnmean_running = checkpoint["bnmean_running"]
+        self.bnstd_running = checkpoint["bnstd_running"]
+
+        self.parameters = [self.C, self.W1, self.W2, self.b2, self.bngain, self.bnbias]
+        for p in self.parameters:
+            p.requires_grad = False  # Disable gradient computation for inference
+
+        print(f"Model parameters loaded from {path}")

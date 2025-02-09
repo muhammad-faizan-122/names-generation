@@ -7,7 +7,14 @@ class Trainer:
     """Handles training of the model"""
 
     def __init__(
-        self, model, X_train, Y_train, max_steps=200000, batch_size=32, seed=2147483647
+        self,
+        model,
+        X_train,
+        Y_train,
+        max_steps=200000,
+        batch_size=32,
+        seed=2147483647,
+        model_path="trained_model/model.pth",
     ):
         self.model = model
         self.X_train = X_train
@@ -17,6 +24,7 @@ class Trainer:
         self.losses = []
         # For reproducibility
         self.generator = torch.Generator().manual_seed(seed)
+        self.model_path = model_path
 
     def train(self):
         """Trains the model"""
@@ -46,11 +54,30 @@ class Trainer:
             # Track loss
             if i % 10000 == 0:
                 print(f"{i:7d}/{self.max_steps:7d}: {loss.item():.4f}")
+
             self.losses.append(loss.log10().item())
 
         print("Training complete!")
+        self.save_model()
+        print(f"Model saved at {self.model_path}")
         self.plot_loss()
-        return self.model.parameters
+
+    def save_model(self):
+        """Saves model parameters to a file"""
+        torch.save(
+            {
+                "C": self.model.C,
+                "W1": self.model.W1,
+                "W2": self.model.W2,
+                "b2": self.model.b2,
+                "bngain": self.model.bngain,
+                "bnbias": self.model.bnbias,
+                "bnmean_running": self.model.bnmean_running,
+                "bnstd_running": self.model.bnstd_running,
+            },
+            self.model_path,
+        )
+        print(f"Model saved to {self.model_path}")
 
     def plot_loss(self):
         """Plots training loss curve"""

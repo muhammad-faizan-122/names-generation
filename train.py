@@ -1,7 +1,7 @@
-from data_loader import DatasetLoader
-from preprocess import Preprocessor, DatasetProcessor
-from mlp_model import MLPModel
-from trainer import Trainer
+from src.data.data_loader import DatasetLoader
+from src.preprocessing.preprocess import Preprocessor, DatasetProcessor
+from src.training.model import MLPModel
+from src.training.trainer import Trainer
 
 # Dataset Configuration
 DATASET_URL = "https://raw.githubusercontent.com/karpathy/makemore/master/names.txt"
